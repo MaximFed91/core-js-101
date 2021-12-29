@@ -244,9 +244,8 @@ function getRectangleString(w, h) {
  *    => 'NOPQRSTUVWXYZABCDEFGHIJKLMnopqrstuvwxyzabcdefghijklm'
  *
  */
-function encodeToRot13(str) {
-  const arr = str.join('').map((item) => item.charAt(0)).map((item) => item > 64 && item < 123 ? item + 13 : item);
-  return String.fromCharCode(...arr);
+function encodeToRot13() {
+  throw new Error('Not implemented');
 }
 
 /**
