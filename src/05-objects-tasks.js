@@ -113,48 +113,116 @@ function fromJSON(proto, json) {
  *
  *  For more examples see unit tests.
  */
+class Builder {
+  constructor(str, num) {
+    this.str = str;
+    this.order = num;
+  }
+
+  element(v) {
+    const str = `${this.str}${v}`;
+    if (this.order === 0) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    if (this.order > -1) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    return new Builder(str, 0);
+  }
+
+  id(v) {
+    const str = `${this.str}#${v}`;
+    if (this.order === 1) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    if (this.order > 0) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    return new Builder(str, 1);
+  }
+
+  class(v) {
+    const str = `${this.str}.${v}`;
+    if (this.order > 2) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    return new Builder(str, 2);
+  }
+
+  attr(v) {
+    const str = `${this.str}[${v}]`;
+    if (this.order > 3) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    return new Builder(str, 3);
+  }
+
+  pseudoClass(v) {
+    const str = `${this.str}:${v}`;
+    if (this.order > 4) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    return new Builder(str, 4);
+  }
+
+  pseudoElement(v) {
+    const str = `${this.str}::${v}`;
+    if (this.order === 5) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    if (this.order > 4) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    return new Builder(str, 5);
+  }
+
+  combine(s1, c, s2) {
+    const str = `${this.str}${s1.stringify()} ${c} ${s2.stringify()}`;
+    return new Builder(str);
+  }
+
+  stringify() {
+    return this.str;
+  }
+}
+
 
 const cssSelectorBuilder = {
   str: '',
+  order: -1,
   element(v) {
-    this.str += `${v}`;
-    return this;
+    const str = `${this.str}${v}`;
+    if (this.order !== -1) throw new Error();
+    return new Builder(str, 0);
   },
 
   id(v) {
-    this.str += `#${v}`;
-    return this;
+    const str = `${this.str}#${v}`;
+    if (this.order > 0) throw new Error();
+    return new Builder(str, 1);
   },
 
   class(v) {
-    this.str += `.${v}`;
-    return this;
+    const str = `${this.str}.${v}`;
+    if (this.order > 2) throw new Error();
+    return new Builder(str, 2);
   },
 
   attr(v) {
-    this.str += `[${v}]`;
-    return this;
+    const str = `${this.str}[${v}]`;
+    if (this.order > 3) throw new Error();
+    return new Builder(str, 3);
   },
 
   pseudoClass(v) {
-    this.str += `:${v}`;
-    return this;
+    const str = `${this.str}:${v}`;
+    if (this.order > 4) throw new Error();
+    return new Builder(str, 4);
   },
 
   pseudoElement(v) {
-    this.str += `::${v}`;
-    return this;
+    const str = `${this.str}::${v}`;
+    if (this.order > 4) throw new Error();
+    return new Builder(str, 5);
   },
 
   combine(s1, c, s2) {
-    this.str += `${s1.stringify()} ${c} ${s2.stringify()}`;
-    return this;
-  },
-
-  stringify() {
-    const res = this.str;
-    this.str = '';
-    return res;
+    const str = `${this.str}${s1.stringify()} ${c} ${s2.stringify()}`;
+    return new Builder(str);
   },
 };
 
